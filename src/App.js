@@ -1,24 +1,66 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import Sidebar from "./components/Sidebar";
+import Editor from "./components/Editor";
+import { useState } from "react";
+import Split from "react-split";
+import { nanoid } from "nanoid";
 
 function App() {
+  const [notes, setNotes] = useState([]);
+  const [currentNoteID, setCurrentNoteID] = useState(
+    (notes[0] && notes[0].id) || ""
+  );
+
+  function updateNote(text) {
+    setNotes((oldNotes) =>
+      oldNotes.map((oldNote) => {
+        return oldNote.id === currentNoteID
+          ? { ...oldNote, body: text }
+          : oldNote;
+      })
+    );
+  }
+
+  function createNewNote() {
+    const newNote = {
+      id: nanoid(),
+      body: "# Type your markdown note's title here",
+    };
+    setNotes((prevNotes) => [newNote, ...prevNotes]);
+    setCurrentNoteID(newNote.id);
+  }
+
+  const findCurrentNote = () => {
+    return (
+      notes.find((note) => {
+        return note.id === currentNoteID;
+      }) || notes[0]
+    );
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      {notes.length > 0 ? (
+        <Split sizes={[25, 75]} direction="horizontal" className="split">
+          <Sidebar
+            notes={notes}
+            currentNote={findCurrentNote()}
+            setCurrentNoteId={setCurrentNoteID}
+            newNote={createNewNote}
+          />
+          {currentNoteID && notes.length > 0 && (
+            <Editor currentNote={findCurrentNote()} updateNote={updateNote} />
+          )}
+        </Split>
+      ) : (
+        <div className="no-notes">
+          <h1>You have no notes</h1>
+          <button className="first-note" onClick={createNewNote}>
+            Create one now
+          </button>
+        </div>
+      )}
+    </main>
   );
 }
 
