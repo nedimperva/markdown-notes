@@ -7,23 +7,23 @@ import { nanoid } from "nanoid";
 
 function App() {
   const [notes, setNotes] = useState(
-    // returning value through function (Lazy Initialization)
-    // so it doesn't' reach into localStorage on every re-render
+    // Lazily initializing  `notes` state so it doesn't
+    // reach into localStorage on every single re-render
+    // of the App component
+    // use JSON.parse() to turn the stringified array back
     () => JSON.parse(localStorage.getItem("notes")) || []
   );
-  const [currentNoteID, setCurrentNoteID] = useState(
+  const [currentNoteId, setCurrentNoteId] = useState(
+    // Before getting notes[0].id check if notes[0] exists
     (notes[0] && notes[0].id) || ""
   );
 
-  function updateNote(text) {
-    setNotes((oldNotes) =>
-      oldNotes.map((oldNote) => {
-        return oldNote.id === currentNoteID
-          ? { ...oldNote, body: text }
-          : oldNote;
-      })
-    );
-  }
+  useEffect(() => {
+    // Every time the `notes` array changes, save it in localStorage.
+    // You'll need to use JSON.stringify()
+    //to turn the array into a string to save in localStorage.
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
 
   function createNewNote() {
     const newNote = {
@@ -31,20 +31,39 @@ function App() {
       body: "# Type your markdown note's title here",
     };
     setNotes((prevNotes) => [newNote, ...prevNotes]);
-    setCurrentNoteID(newNote.id);
+    setCurrentNoteId(newNote.id);
   }
 
-  const findCurrentNote = () => {
+  function updateNote(text) {
+    // Put the most recently-modified note at the top
+    setNotes((oldNotes) => {
+      const newArray = [];
+      for (let i = 0; i < oldNotes.length; i++) {
+        const oldNote = oldNotes[i];
+        if (oldNote.id === currentNoteId) {
+          newArray.unshift({ ...oldNote, body: text });
+        } else {
+          newArray.push(oldNote);
+        }
+      }
+      return newArray;
+    });
+  }
+
+  function deleteNote(event, noteId) {
+    // Prevent event to remain selected after deleting note
+    console.log("Deleting note");
+    event.stopPropagation();
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+  }
+
+  function findCurrentNote() {
     return (
       notes.find((note) => {
-        return note.id === currentNoteID;
+        return note.id === currentNoteId;
       }) || notes[0]
     );
-  };
-
-  useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
+  }
 
   return (
     <main>
@@ -53,10 +72,11 @@ function App() {
           <Sidebar
             notes={notes}
             currentNote={findCurrentNote()}
-            setCurrentNoteId={setCurrentNoteID}
+            setCurrentNoteId={setCurrentNoteId}
             newNote={createNewNote}
+            deleteNote={deleteNote}
           />
-          {currentNoteID && notes.length > 0 && (
+          {currentNoteId && notes.length > 0 && (
             <Editor currentNote={findCurrentNote()} updateNote={updateNote} />
           )}
         </Split>
