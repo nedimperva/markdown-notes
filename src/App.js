@@ -7,7 +7,9 @@ import { nanoid } from "nanoid";
 
 function App() {
   const [notes, setNotes] = useState(
-    JSON.parse(localStorage.getItem("notes")) || []
+    // returning value through function (Lazy Initialization)
+    // so it doesn't' reach into localStorage on every re-render
+    () => JSON.parse(localStorage.getItem("notes")) || []
   );
   const [currentNoteID, setCurrentNoteID] = useState(
     (notes[0] && notes[0].id) || ""
