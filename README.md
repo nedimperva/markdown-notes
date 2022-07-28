@@ -1,4 +1,4 @@
-# Scrimba - Notes App solution
+# Simple markdown notes app in ReactJS
 
 ## Screenshots
 
