@@ -68,7 +68,7 @@ function App() {
   return (
     <main>
       {notes.length > 0 ? (
-        <Split sizes={[25, 75]} direction="horizontal" className="split">
+        <Split sizes={[30, 70]} direction="horizontal" className="split">
           <Sidebar
             notes={notes}
             currentNote={findCurrentNote()}
